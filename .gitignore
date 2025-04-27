@@ -1,0 +1,19 @@
+# ReconVibe output files
+*.txt
+!README.md
+!LICENSE
+!reconvibe.sh
+
+# Ignore output folders (common naming pattern)
+recon-*/
+
+# Logs or temporary files
+*.log
+*.tmp
+
+# macOS system files
+.DS_Store
+
+# VSCode/IDE
+.vscode/
+.idea/
