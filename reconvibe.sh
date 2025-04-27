@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# Function to handle Windows line endings in Linux/WSL
+handle_line_endings() {
+    if [[ "$(uname -s)" == "Linux" ]]; then
+        if file "$0" | grep -q "CRLF"; then
+            echo -e "${YELLOW}[!] Windows line endings detected. Converting to Unix line endings...${NC}"
+            dos2unix "$0"
+        fi
+    fi
+}
+
+# Call the function to handle line endings
+handle_line_endings
+
 # Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
