@@ -1,5 +1,5 @@
 # ReconVibe
-Automated recon script for bug bounty hunters – subdomains, URLs, live hosts, and gf patterns in one run.
+Automated recon script for bug bounty hunters – subdomains, urls, live hosts, and gf patterns in one run.
 
 **ReconVibe** is an automated reconnaissance script designed for bug bounty hunters and security researchers. It streamlines subdomain discovery, live domain checking, URL gathering, and vulnerability pattern matching using popular tools.
 
@@ -90,6 +90,77 @@ Everything gets saved and sorted under this folder.
 
 ---
 
+## 🛠 Common Issues & Fixes
+
+---
+
+### ❗ Problem: Line Endings Error
+
+---
+
+#### Error Output:
+
+```bash
+┌──(kali㉿kali)-[~/ReconVibe]
+└─$ bash reconvibe.sh
+reconvibe.sh: line 2: $'
+': command not found
+reconvibe.sh: line 4: syntax error near unexpected token $'{
+''
+'econvibe.sh: line 4: handle_line_endings() {
+┌──(kali㉿kali)-[~/ReconVibe]
+└─$
+```
+
+---
+
+#### Cause:
+
+This issue occurs when the script uses **Windows-style line endings (CRLF)**, which are incompatible with Unix-based systems (Linux/macOS/WSL).  
+The presence of the carriage return (`
+`) character causes the script to fail during execution.
+
+---
+
+#### Solution:
+
+Here’s how you can fix it:
+
+1. **Convert to Unix line endings (recommended):**
+
+   If you have the `dos2unix` utility installed, run:
+
+   ```bash
+   dos2unix reconvibe.sh
+   ```
+
+2. **Or manually remove carriage returns:**
+
+   If `dos2unix` is not available, you can use `sed`:
+
+   ```bash
+   sed -i 's/\r//g' reconvibe.sh
+
+   ```
+
+3. **Ensure the script is executable:**
+
+   After fixing the line endings, grant execute permissions:
+
+   ```bash
+   chmod +x reconvibe.sh
+   ```
+
+4. **Run the script again:**
+
+   ```bash
+   ./reconvibe.sh <domain.com>
+   ```
+
+✅ _Tip: Always use a Unix-compatible text editor (like VSCode with LF line endings) when editing shell scripts to avoid this issue._
+
+---
+
 ## 📢 Disclaimer
 
 This tool is meant for **educational and authorized testing purposes only**. Always get proper permission before scanning any domains.
@@ -98,5 +169,7 @@ This tool is meant for **educational and authorized testing purposes only**. Alw
 
 ## 👤 Author
 
-ReconVibe by Ankushhhh14 
+ReconVibe by Ankushhhh14  
 Pull requests and suggestions are welcome!
+
+---
