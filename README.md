@@ -92,11 +92,9 @@ Everything gets saved and sorted under this folder.
 
 ## 🛠 Common Issues & Fixes
 
----
 
 ### ❗ Problem: Line Endings Error
 
----
 
 #### Error Output:
 
