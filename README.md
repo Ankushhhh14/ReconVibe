@@ -1,7 +1,8 @@
-# ReconVibe
-Automated recon script for bug bounty hunters – subdomains, urls, live hosts, and gf patterns in one run.
 
-**ReconVibe** is an automated reconnaissance script designed for bug bounty hunters and security researchers. It streamlines subdomain discovery, live domain checking, URL gathering, and vulnerability pattern matching using popular tools.
+# ReconVibe
+Automated recon script for bug bounty hunters – subdomains, urls, live hosts, js file analysis, and gf patterns in one run.
+
+**ReconVibe** is an automated reconnaissance script designed for bug bounty hunters and security researchers. It streamlines subdomain discovery, live domain checking, URL gathering, JavaScript file extraction and analysis, and vulnerability pattern matching using popular tools.
 
 ---
 
@@ -16,6 +17,7 @@ Automated recon script for bug bounty hunters – subdomains, urls, live hosts, 
   - **katana**
   - **waymore** (optional)
 - 🎯 Vulnerability Pattern Detection using **gf**
+- 📄 JavaScript File Extraction and Analysis using **Mantra**
 - 📁 Organized outputs by folder name
 
 ---
@@ -32,8 +34,9 @@ Make sure the following tools are installed and available in your `$PATH`:
 - [`waymore`](https://github.com/xnl-h4ck3r/waymore)
 - [`katana`](https://github.com/projectdiscovery/katana)
 - [`gf`](https://github.com/tomnomnom/gf)
+- [`mantra`](https://github.com/Significant-Gravitas/Mantra)
 
-Install all dependencies via `go install` or your preferred method.
+Install all dependencies via `go install`, `git clone`, or your preferred method.
 
 ---
 
@@ -56,6 +59,8 @@ You'll be prompted to enter a name for the output folder. The script then automa
 - `gau.txt`, `waybackurls.txt`, `katana.txt`, `waymore.txt` – Raw URL output from various tools
 - `urls.txt` – Deduplicated final URL list
 - `*_urls.txt` – URLs matching specific **gf** patterns
+- `jsfiles.txt` – Extracted JavaScript files
+- `mantra_output.txt` – Vulnerability findings from JavaScript files using **Mantra**
 
 ---
 
@@ -79,6 +84,21 @@ You'll be prompted to enter a name for the output folder. The script then automa
 
 ---
 
+## 📜 JavaScript File Analysis
+
+At the final stage, ReconVibe extracts all JavaScript (`.js`) files from collected URLs and analyzes them using **Mantra**.  
+Findings are saved in `mantra_output.txt` for easy review.
+
+Command used internally:
+
+```bash
+cat jsfiles.txt | mantra | tee mantra_output.txt
+```
+
+This allows you to spot exposed secrets, API endpoints, and vulnerabilities hidden inside JavaScript files.
+
+---
+
 ## 📌 Example
 
 ```bash
@@ -92,9 +112,7 @@ Everything gets saved and sorted under this folder.
 
 ## 🛠 Common Issues & Fixes
 
-
 ### ❗ Problem: Line Endings Error
-
 
 #### Error Output:
 
@@ -115,8 +133,7 @@ reconvibe.sh: line 4: syntax error near unexpected token $'{
 #### Cause:
 
 This issue occurs when the script uses **Windows-style line endings (CRLF)**, which are incompatible with Unix-based systems (Linux/macOS/WSL).  
-The presence of the carriage return (`
-`) character causes the script to fail during execution.
+The presence of the carriage return (`\r`) character causes the script to fail during execution.
 
 ---
 
@@ -138,7 +155,6 @@ Here’s how you can fix it:
 
    ```bash
    sed -i 's/\r//g' reconvibe.sh
-
    ```
 
 3. **Ensure the script is executable:**
