@@ -38,8 +38,9 @@ input="$1"
 echo -e "${YELLOW}[+] Please enter a name for the output folder (e.g., recon-hackerone-2025-04-26):${NC}"
 read -p "Folder name: " folder_name
 
-# Create the directory if it doesn't exist
-mkdir -p "$folder_name"
+# Create main output directory and subfolders
+mkdir -p "$folder_name/all_urls"
+mkdir -p "$folder_name/gf_patterns"
 cd "$folder_name" || exit
 
 # Subdomain enumeration
@@ -63,7 +64,6 @@ else
     echo -e "${GREEN}[+] Running httpx-toolkit on subdomains...${NC}"
     httpx-toolkit -l subfinder.txt -silent | tee live.txt
 
-    # Check if httpx found any live domains
     if [ ! -s live.txt ]; then
         echo -e "${YELLOW}[!] No live domains found from subfinder. Falling back to original domain(s)...${NC}"
         if [[ -f "../$input" ]]; then
@@ -86,30 +86,31 @@ use_waymore=${use_waymore:-n}
 # URL Gathering
 echo -e "${GREEN}[+] Gathering URLs from Waybackurls, Waymore (optional), GAU, Katana...${NC}"
 
-> gau.txt
-> waybackurls.txt
-> waymore.txt
-> katana.txt
+# Empty URL files inside "all_urls" folder
+> all_urls/gau.txt
+> all_urls/waybackurls.txt
+> all_urls/waymore.txt
+> all_urls/katana.txt
 
-cat live.txt | gau --o gau.txt &
-cat live.txt | waybackurls > waybackurls.txt &
+cat live.txt | gau --o all_urls/gau.txt &
+cat live.txt | waybackurls > all_urls/waybackurls.txt &
 
 # Conditionally run Waymore
 if [[ "$use_waymore" == "y" || "$use_waymore" == "Y" ]]; then
     echo -e "${GREEN}[+] Running Waymore with timeout of 5 minutes...${NC}"
-    timeout 5m waymore -oU waymore.txt -l live.txt --depth 1 --threads 50 &
+    timeout 5m waymore -oU all_urls/waymore.txt -l live.txt --depth 1 --threads 50 &
 else
     echo -e "${YELLOW}[!] Skipping Waymore as per user choice.${NC}"
 fi
 
-katana -list live.txt -o katana.txt &
+katana -list live.txt -o all_urls/katana.txt &
 
 # Wait for all background jobs to finish
 wait
 
-# Merge all URLs
+# Merge all URLs into urls.txt
 echo -e "${GREEN}[+] Merging and deduplicating URLs...${NC}"
-cat gau.txt waybackurls.txt waymore.txt katana.txt | sort -u > urls.txt
+cat all_urls/*.txt | sort -u > urls.txt
 
 # GF-Patterns
 echo -e "${GREEN}[+] Running GF-Patterns...${NC}"
@@ -117,7 +118,7 @@ echo -e "${GREEN}[+] Running GF-Patterns...${NC}"
 patterns=("xss" "sqli" "ssti" "idor" "lfi" "rce" "ssrf" "redirect" "s3" "debug_logic" "interestingEXT" "interestingparams" "php_errors" "server-errors" "cors")
 
 for pattern in "${patterns[@]}"; do
-    if gf "$pattern" < urls.txt > "${pattern}_urls.txt" 2>/dev/null; then
+    if gf "$pattern" < urls.txt > "gf_patterns/${pattern}_urls.txt" 2>/dev/null; then
         echo -e "${GREEN}[+] Found pattern: $pattern${NC}"
     else
         echo -e "${YELLOW}[!] Pattern not found or error: $pattern${NC}"
@@ -128,4 +129,4 @@ done
 echo -e "${GREEN}[+] Recon complete! All data saved in '$folder_name' folder.${NC}"
 echo -e "${GREEN}Targets scanned: $(wc -l < live.txt)${NC}"
 echo -e "${GREEN}Total URLs collected: $(wc -l < urls.txt)${NC}"
-echo -e "${GREEN}GF patterns extracted: $(ls *_urls.txt 2>/dev/null | wc -l)${NC}"
+echo -e "${GREEN}GF patterns extracted: $(ls gf_patterns/*.txt 2>/dev/null | wc -l)${NC}"
